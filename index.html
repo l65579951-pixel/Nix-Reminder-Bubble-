@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nix Reminder Bubble ☁️✨</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* --- Variables de Tema (Glassmorphism & Holográfico) --- */
+        :root {
+            --bg-glass: rgba(255, 255, 255, 0.25);
+            --border-holo: rgba(255, 255, 255, 0.6);
+            --shadow-holo: 0 8px 32px rgba(110, 180, 255, 0.15), inset 0 0 15px rgba(255, 255, 255, 0.5);
+            --text-main: #3a506b;
+            --text-muted: #5c728a;
+            --btn-bg: rgba(255, 255, 255, 0.6);
+            --btn-hover: rgba(255, 255, 255, 0.9);
+            --accent: #7ab8f5;
+            --bg-body: transparent;
+        }
+
+        /* --- Modo Oscuro Automático (Notion) --- */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-glass: rgba(20, 25, 40, 0.35);
+                --border-holo: rgba(120, 190, 255, 0.3);
+                --shadow-holo: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(120, 190, 255, 0.15);
+                --text-main: #e0f0ff;
+                --text-muted: #a0b8d0;
+                --btn-bg: rgba(80, 130, 200, 0.3);
+                --btn-hover: rgba(100, 160, 240, 0.5);
+                --accent: #90c8ff;
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: var(--bg-body);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            color: var(--text-main);
+        }
+
+        /* --- Contenedor Principal --- */
+        .widget-container {
+            position: relative;
+            width: 320px;
+            height: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding-bottom: 20px;
+            opacity: 0;
+            animation: fadeIn 1s ease forwards;
+        }
+
+        /* --- Animaciones Base --- */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); }
+        }
+
+        @keyframes cloudPop {
+            0% { opacity: 0; transform: scale(0.8) translateY(10px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        @keyframes starTwinkle {
+            0%, 100% { opacity: 0.3; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        /* --- Nix (El Personaje) --- */
+        .nix-container {
+            position: absolute;
+            bottom: 120px;
+            z-index: 2;
+            animation: float 4s ease-in-out infinite;
+            filter: drop-shadow(0 10px 15px rgba(120, 190, 255, 0.3));
+        }
+
+        .nix-img {
+            width: 140px;
+            height: auto;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        /* --- Nube de Texto (Glassmorphism) --- */
+        .cloud-bubble {
+            background: var(--bg-glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-holo);
+            border-radius: 24px;
+            padding: 20px;
+            width: 90%;
+            text-align: center;
+            box-shadow: var(--shadow-holo);
+            position: relative;
+            z-index: 3;
+            animation: cloudPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            animation-delay: 0.5s;
+            opacity: 0;
+        }
+
+        .cloud-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent);
+            font-weight: 800;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .cloud-message {
+            font-size: 1rem;
+            font-weight: 700;
+            line-height: 1.4;
+            margin-bottom: 15px;
+            min-height: 44px; /* Evita saltos de altura */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-complete {
+            background: var(--btn-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border-holo);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .btn-complete:hover {
+            background: var(--btn-hover);
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(120, 190, 255, 0.2);
+        }
+
+        .btn-complete:active {
+            transform: scale(0.95);
+        }
+
+        /* --- Botón de Ajustes --- */
+        .settings-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-holo);
+            color: var(--text-main);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 10;
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: 0.2s;
+        }
+
+        .settings-btn:hover {
+            background: var(--btn-hover);
+            transform: rotate(45deg);
+        }
+
+        /* --- Modal de Ajustes --- */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-holo);
+            padding: 20px;
+            border-radius: 20px;
+            width: 280px;
+            box-shadow: var(--shadow-holo);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+        }
+
+        .modal h3 {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: var(--accent);
+            text-align: center;
+        }
+
+        .setting-group {
+            margin-bottom: 12px;
+        }
+
+        .setting-group label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .setting-group select {
+            width: 100%;
+            padding: 6px;
+            border-radius: 10px;
+            border: 1px solid var(--border-holo);
+            background: var(--btn-bg);
+            color: var(--text-main);
+            font-family: inherit;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+            font-size: 0.8rem;
+        }
+
+        .save-btn {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        /* Estrellitas mágicas de fondo */
+        .star {
+            position: absolute;
+            color: var(--accent);
+            font-size: 12px;
+            animation: starTwinkle 2s infinite ease-in-out;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="widget-container" id="widget">
+        <!-- Botón Ajustes -->
+        <button class="settings-btn" onclick="toggleModal()">⚙️</button>
+
+        <!-- Estrellas Decorativas -->
+        <div class="star" style="top: 20%; left: 15%; animation-delay: 0s;">✦</div>
+        <div class="star" style="top: 15%; right: 20%; animation-delay: 0.5s; font-size: 8px;">✨</div>
+        <div class="star" style="top: 40%; left: 80%; animation-delay: 1s;">⭐</div>
+
+        <!-- Personaje Nix (CORREGIDO) -->
+        <div class="nix-container">
+            <img src="https://i.postimg.cc/W1hvkX3Q/Whats-App-Image-2026-06-22-at-5-44-21-PM-removebg-preview.png" alt="Nix Normal" class="nix-img" id="nix-normal">
+            <img src="https://i.postimg.cc/JhXCT0jJ/fantasma-removebg-preview.png" alt="Nix Feliz" class="nix-img" id="nix-happy" style="display: none;">
+        </div>
+
+        <!-- Nube de Texto -->
+        <div class="cloud-bubble" id="cloud">
+            <div class="cloud-title">Nix Reminder ✦</div>
+            <div class="cloud-message" id="message-text">Cargando magia...</div>
+            <button class="btn-complete" id="complete-btn" onclick="completeTask()">✓ Completar</button>
+        </div>
+    </div>
+
+    <!-- Modal de Ajustes -->
+    <div class="modal" id="settings-modal">
+        <div class="modal-content">
+            <h3>Ajustes Cósmicos ✨</h3>
+            
+            <div class="setting-group">
+                <label>Frecuencia:</label>
+                <select id="interval-select">
+                    <option value="5">Cada 5 minutos</option>
+                    <option value="60">Cada 1 hora</option>
+                    <option value="180">Cada 3 horas</option>
+                    <option value="300">Cada 5 horas</option>
+                    <option value="manual">Manual</option>
+                </select>
+            </div>
+
+            <div class="setting-group">
+                <label>Categorías:</label>
+                <div class="checkbox-group"><input type="checkbox" value="morning" class="cat-cb" checked> Mañana</div>
+                <div class="checkbox-group"><input type="checkbox" value="selfcare" class="cat-cb" checked> Self care / glow</div>
+                <div class="checkbox-group"><input type="checkbox" value="habits" class="cat-cb" checked> Hábitos diarios</div>
+                <div class="checkbox-group"><input type="checkbox" value="productivity" class="cat-cb" checked> Productividad</div>
+                <div class="checkbox-group"><input type="checkbox" value="night" class="cat-cb" checked> Tarde / noche</div>
+            </div>
+
+            <button class="btn-complete save-btn" onclick="saveSettings()">Guardar ✨</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Base de Datos de Frases de Nix ---
+        const phrases = {
+            morning: [
+                "Buenos días ✨ Nix te recuerda empezar el día con calma.",
+                "Hora de abrir las cortinas y dejar entrar un poquito de luz ☀️",
+                "No olvides tomar agua al despertar 💧",
+                "Tu cuerpo estuvo descansando, dale energía con un buen desayuno 🌙",
+                "Un nuevo día comienza, haz algo bonito por ti ✨",
+                "Pequeño recordatorio: respira profundo y disfruta el momento ☁️",
+                "Nix dice: tu cama puede esperar, el día te llama 🌎",
+                "Momento de preparar tu rutina de mañana 🧴",
+                "Recuerda revisar tus objetivos de hoy ⭐",
+                "Un paso pequeño también cuenta 💙"
+            ],
+            selfcare: [
+                "Hora de cuidar tu piel ✨",
+                "Tu glow también necesita atención 💗",
+                "No olvides tu rutina de skincare 🧴",
+                "Un poquito de autocuidado nunca sobra ☁️",
+                "Nix recomienda un momento solo para ti 🌙",
+                "Pausa cósmica: hidrátate y relájate ✨",
+                "Tu bienestar está en la lista de prioridades 💙",
+                "Momento de recargar tu energía 🔋",
+                "Haz algo que te haga sentir bien hoy 🌸",
+                "Pequeños cuidados crean grandes cambios ⭐"
+            ],
+            habits: [
+                "¿Ya tomaste agua? Nix está vigilando desde su nube ☁️",
+                "Hora de moverte un poquito 🚀",
+                "Estira tus brazos, tu cuerpo te lo agradecerá ✨",
+                "Recuerda hacer una pausa entre tareas 🌙",
+                "Ordenar un pequeño espacio puede cambiar tu día 🪐",
+                "Nix te recuerda revisar tus pendientes 📋",
+                "Una tarea menos, una estrella más ⭐",
+                "No olvides guardar tus momentos favoritos del día 📸",
+                "Cinco minutos de organización pueden ayudarte mucho 💙",
+                "Tu futuro yo te agradecerá este pequeño esfuerzo ✨"
+            ],
+            productivity: [
+                "Hora de concentrarte en tus metas 📖",
+                "Nix activa el modo enfoque 🚀",
+                "Un poquito cada día construye grandes cosas 🌟",
+                "Recuerda descansar tus ojos si llevas mucho tiempo frente a una pantalla 👀",
+                "Tu misión cósmica de hoy continúa 🌌",
+                "Termina una tarea y celebra ese pequeño logro 🎉",
+                "No tienes que hacerlo todo de golpe, paso a paso ☁️",
+                "Momento de volver a tus proyectos ✨",
+                "Nix cree en tus ideas 💙",
+                "Cada avance cuenta, incluso los pequeños 🌙"
+            ],
+            night: [
+                "El día sigue, pero recuerda cuidar tu energía ✨",
+                "Haz una pausa y disfruta un momento tranquilo ☁️",
+                "Nix pregunta: ¿qué cosa bonita pasó hoy? 💙",
+                "Guarda tus logros del día ⭐",
+                "Es hora de empezar a bajar el ritmo 🌙",
+                "Prepara todo para un mañana más fácil ✨",
+                "Tu mente también necesita descanso 🪐",
+                "No olvides agradecer algo de este día 💗",
+                "Hora de tu rutina nocturna 🌙",
+                "Nix apaga las estrellas por hoy, descansa ✨"
+            ]
+        };
+
+        // --- Variables de Estado ---
+        let currentInterval = 5; // minutos
+        let activeCategories = ['morning', 'selfcare', 'habits', 'productivity', 'night'];
+        let timerId = null;
+
+        // --- Elementos del DOM ---
+        const msgText = document.getElementById('message-text');
+        const nixNormal = document.getElementById('nix-normal');
+        const nixHappy = document.getElementById('nix-happy');
+        const completeBtn = document.getElementById('complete-btn');
+        const modal = document.getElementById('settings-modal');
+
+        // --- Lógica Principal ---
+        function initWidget() {
+            loadSettings();
+            showRandomPhrase();
+            startTimer();
+        }
+
+        function showRandomPhrase() {
+            // Restaurar estado normal
+            nixNormal.style.display = 'block';
+            nixHappy.style.display = 'none';
+            completeBtn.style.display = 'inline-block';
+            completeBtn.innerText = "✓ Completar";
+
+            // Si no hay categorías, mostrar mensaje por defecto
+            if (activeCategories.length === 0) {
+                msgText.innerText = "Activa alguna categoría en ajustes ✨";
+                return;
+            }
+
+            // Seleccionar categoría y frase aleatoria
+            const randomCat = activeCategories[Math.floor(Math.random() * activeCategories.length)];
+            const catPhrases = phrases[randomCat];
+            const randomPhrase = catPhrases[Math.floor(Math.random() * catPhrases.length)];
+            
+            // Animación suave de cambio de texto
+            msgText.style.opacity = 0;
+            setTimeout(() => {
+                msgText.innerText = randomPhrase;
+                msgText.style.opacity = 1;
+            }, 200);
+        }
+
+        function completeTask() {
+            // Animación de Completado
+            nixNormal.style.display = 'none';
+            nixHappy.style.display = 'block';
+            
+            msgText.style.opacity = 0;
+            completeBtn.style.display = 'none';
+            
+            setTimeout(() => {
+                msgText.innerHTML = "¡Completado! ✨<br><span style='font-size:0.8rem; color:var(--accent);'>+1 Cosmic Coin ⭐</span>";
+                msgText.style.opacity = 1;
+            }, 200);
+
+            // Si es manual, mostrar botón para pedir otro recordatorio
+            if (currentInterval === 'manual') {
+                setTimeout(() => {
+                    completeBtn.innerText = "Siguiente recordatorio ✦";
+                    completeBtn.style.display = 'inline-block';
+                    completeBtn.onclick = showRandomPhrase;
+                }, 1500);
+            }
+        }
+
+        function startTimer() {
+            if (timerId) clearInterval(timerId);
+            if (currentInterval === 'manual') {
+                completeBtn.innerText = "Dame un recordatorio ✦";
+                completeBtn.onclick = showRandomPhrase;
+                msgText.innerText = "Nix está descansando... 🌙";
+                return;
+            }
+            
+            completeBtn.onclick = completeTask;
+            const ms = currentInterval * 60 * 1000;
+            timerId = setInterval(showRandomPhrase, ms);
+        }
+
+        // --- Ajustes y LocalStorage ---
+        function toggleModal() {
+            modal.classList.toggle('active');
+        }
+
+        function saveSettings() {
+            const select = document.getElementById('interval-select');
+            currentInterval = select.value === 'manual' ? 'manual' : parseInt(select.value);
+
+            const checkboxes = document.querySelectorAll('.cat-cb');
+            activeCategories = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+
+            localStorage.setItem('nix-interval', currentInterval);
+            localStorage.setItem('nix-categories', JSON.stringify(activeCategories));
+
+            toggleModal();
+            showRandomPhrase();
+            startTimer();
+        }
+
+        function loadSettings() {
+            const savedInterval = localStorage.getItem('nix-interval');
+            const savedCats = localStorage.getItem('nix-categories');
+
+            if (savedInterval) currentInterval = savedInterval === 'manual' ? 'manual' : parseInt(savedInterval);
+            if (savedCats) activeCategories = JSON.parse(savedCats);
+
+            // Actualizar UI
+            document.getElementById('interval-select').value = currentInterval;
+            document.querySelectorAll('.cat-cb').forEach(cb => {
+                cb.checked = activeCategories.includes(cb.value);
+            });
+        }
+
+        // Iniciar
+        initWidget();
+    </script>
+</body>
+</html>
