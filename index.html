@@ -506,3 +506,45 @@
     </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: transparent; font-family: sans-serif; }
+        .widget { width: 280px; text-align: center; background: rgba(255,255,255,0.7); padding: 15px; border-radius: 20px; border: 1px solid rgba(0,0,0,0.1); }
+        img { width: 100px; display: block; margin: 0 auto 10px; }
+        p { font-size: 14px; font-weight: 700; color: #3a506b; }
+    </style>
+</head>
+<body>
+    <div class="widget">
+        <img src="https://i.postimg.cc/W1hvkX3Q/Whats-App-Image-2026-06-22-at-5-44-21-PM-removebg-preview.png">
+        <p id="msg">Cargando...</p>
+    </div>
+    <script>
+        const frases = ["Toma agua 💧", "Estírate ✨", "Respira profundo ☁️", "Haz una pausa 🌙", "Nix cree en ti 💙"];
+        
+        function actualizarNix() {
+            const ahora = Date.now();
+            const ultimoCambio = localStorage.getItem('nix_last_change') || 0;
+            const intervalo = 3 * 60 * 1000; // 3 minutos
+
+            // Si ha pasado el tiempo o es la primera vez
+            if (ahora - ultimoCambio > intervalo) {
+                const nuevaFrase = frases[Math.floor(Math.random() * frases.length)];
+                document.getElementById('msg').innerText = nuevaFrase;
+                localStorage.setItem('nix_last_change', ahora);
+                localStorage.setItem('nix_last_phrase', nuevaFrase);
+            } else {
+                // Si no ha pasado el tiempo, mostrar la última frase guardada
+                document.getElementById('msg').innerText = localStorage.getItem('nix_last_phrase') || frases[0];
+            }
+        }
+
+        actualizarNix();
+        // Un chequeo extra cada 5 segundos para refrescar si Notion intenta recargar
+        setInterval(actualizarNix, 5000);
+    </script>
+</body>
+</html>
