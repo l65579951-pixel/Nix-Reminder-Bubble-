@@ -140,6 +140,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: opacity 0.2s ease;
         }
 
         .btn-complete {
@@ -283,7 +284,7 @@
         <div class="star" style="top: 15%; right: 20%; animation-delay: 0.5s; font-size: 8px;">✨</div>
         <div class="star" style="top: 40%; left: 80%; animation-delay: 1s;">⭐</div>
 
-        <!-- Personaje Nix (CORREGIDO) -->
+        <!-- Personaje Nix -->
         <div class="nix-container">
             <img src="https://i.postimg.cc/W1hvkX3Q/Whats-App-Image-2026-06-22-at-5-44-21-PM-removebg-preview.png" alt="Nix Normal" class="nix-img" id="nix-normal">
             <img src="https://i.postimg.cc/JhXCT0jJ/fantasma-removebg-preview.png" alt="Nix Feliz" class="nix-img" id="nix-happy" style="display: none;">
@@ -293,7 +294,7 @@
         <div class="cloud-bubble" id="cloud">
             <div class="cloud-title">Nix Reminder ✦</div>
             <div class="cloud-message" id="message-text">Cargando magia...</div>
-            <button class="btn-complete" id="complete-btn" onclick="completeTask()">✓ Completar</button>
+            <button class="btn-complete" id="complete-btn" onclick="acknowledgeReminder()">Gracias ✨</button>
         </div>
     </div>
 
@@ -305,11 +306,10 @@
             <div class="setting-group">
                 <label>Frecuencia:</label>
                 <select id="interval-select">
-                    <option value="5">Cada 5 minutos</option>
+                    <option value="3">Cada 3 minutos</option>
+                    <option value="15">Cada 15 minutos</option>
+                    <option value="30">Cada 30 minutos</option>
                     <option value="60">Cada 1 hora</option>
-                    <option value="180">Cada 3 horas</option>
-                    <option value="300">Cada 5 horas</option>
-                    <option value="manual">Manual</option>
                 </select>
             </div>
 
@@ -392,7 +392,7 @@
         };
 
         // --- Variables de Estado ---
-        let currentInterval = 5; // minutos
+        let currentInterval = 3; // 3 minutos por defecto
         let activeCategories = ['morning', 'selfcare', 'habits', 'productivity', 'night'];
         let timerId = null;
 
@@ -411,24 +411,23 @@
         }
 
         function showRandomPhrase() {
-            // Restaurar estado normal
+            // Restaurar estado normal de Nix
             nixNormal.style.display = 'block';
             nixHappy.style.display = 'none';
             completeBtn.style.display = 'inline-block';
-            completeBtn.innerText = "✓ Completar";
 
-            // Si no hay categorías, mostrar mensaje por defecto
+            // Si no hay categorías
             if (activeCategories.length === 0) {
                 msgText.innerText = "Activa alguna categoría en ajustes ✨";
                 return;
             }
 
-            // Seleccionar categoría y frase aleatoria
+            // Seleccionar categoría y frase
             const randomCat = activeCategories[Math.floor(Math.random() * activeCategories.length)];
             const catPhrases = phrases[randomCat];
             const randomPhrase = catPhrases[Math.floor(Math.random() * catPhrases.length)];
             
-            // Animación suave de cambio de texto
+            // Animación de texto
             msgText.style.opacity = 0;
             setTimeout(() => {
                 msgText.innerText = randomPhrase;
@@ -436,39 +435,34 @@
             }, 200);
         }
 
-        function completeTask() {
-            // Animación de Completado
+        function acknowledgeReminder() {
+            // Nix se pone feliz y el botón desaparece temporalmente
             nixNormal.style.display = 'none';
             nixHappy.style.display = 'block';
             
             msgText.style.opacity = 0;
             completeBtn.style.display = 'none';
             
+            // Mensaje de respuesta corta
             setTimeout(() => {
-                msgText.innerHTML = "¡Completado! ✨<br><span style='font-size:0.8rem; color:var(--accent);'>+1 Cosmic Coin ⭐</span>";
+                msgText.innerText = "¡De nada! ☁️";
                 msgText.style.opacity = 1;
             }, 200);
 
-            // Si es manual, mostrar botón para pedir otro recordatorio
-            if (currentInterval === 'manual') {
+            // Después de 2.5 segundos, pasa a modo "reposo" hasta el próximo intervalo
+            setTimeout(() => {
+                msgText.style.opacity = 0;
                 setTimeout(() => {
-                    completeBtn.innerText = "Siguiente recordatorio ✦";
-                    completeBtn.style.display = 'inline-block';
-                    completeBtn.onclick = showRandomPhrase;
-                }, 1500);
-            }
+                    msgText.innerText = "Nix sigue flotando por aquí... ✨";
+                    msgText.style.opacity = 1;
+                    nixNormal.style.display = 'block';
+                    nixHappy.style.display = 'none';
+                }, 200);
+            }, 2500);
         }
 
         function startTimer() {
             if (timerId) clearInterval(timerId);
-            if (currentInterval === 'manual') {
-                completeBtn.innerText = "Dame un recordatorio ✦";
-                completeBtn.onclick = showRandomPhrase;
-                msgText.innerText = "Nix está descansando... 🌙";
-                return;
-            }
-            
-            completeBtn.onclick = completeTask;
             const ms = currentInterval * 60 * 1000;
             timerId = setInterval(showRandomPhrase, ms);
         }
@@ -480,7 +474,7 @@
 
         function saveSettings() {
             const select = document.getElementById('interval-select');
-            currentInterval = select.value === 'manual' ? 'manual' : parseInt(select.value);
+            currentInterval = parseInt(select.value);
 
             const checkboxes = document.querySelectorAll('.cat-cb');
             activeCategories = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
@@ -497,7 +491,7 @@
             const savedInterval = localStorage.getItem('nix-interval');
             const savedCats = localStorage.getItem('nix-categories');
 
-            if (savedInterval) currentInterval = savedInterval === 'manual' ? 'manual' : parseInt(savedInterval);
+            if (savedInterval) currentInterval = parseInt(savedInterval);
             if (savedCats) activeCategories = JSON.parse(savedCats);
 
             // Actualizar UI
